@@ -12,6 +12,23 @@ namespace LibraryApp.DataAccess.Concrete
             _context = libraryContext;
         }
 
+        public bool Add(TEntity entity, Guid userId)
+        {
+            try
+            {
+                entity.CreatedDate = DateTime.UtcNow;
+                entity.CreatedUser = userId;
+
+                _context.Add(entity);
+                return (_context.SaveChanges() > 0);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+
+        }
+
         public async Task<bool> AddAsync(TEntity entity, Guid userId)
         {
             try
@@ -26,7 +43,6 @@ namespace LibraryApp.DataAccess.Concrete
             {
                 throw;
             }
-
         }
 
         public async Task<TEntity> GetByIdAsync(TKey id)

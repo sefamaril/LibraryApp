@@ -2,6 +2,8 @@
 {
     public interface IGenericRepository<TEntity, in TKey> where TEntity : BaseEntity<TKey>
     {
+        bool Add(TEntity entity, Guid userId);
+
         Task<bool> AddAsync(TEntity entity, Guid userId);
 
         Task<bool> UpdateAsync(TEntity entity, Guid userId);
