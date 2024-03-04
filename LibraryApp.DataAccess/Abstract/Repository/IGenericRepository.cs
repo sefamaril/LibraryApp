@@ -1,4 +1,4 @@
-﻿namespace LibraryApp.DataAccess.Abstract
+﻿namespace LibraryApp.DataAccess.Abstract.Repository
 {
     public interface IGenericRepository<TEntity, in TKey> where TEntity : BaseEntity<TKey>
     {

@@ -1,4 +1,4 @@
-﻿using LibraryApp.DataAccess.Abstract;
+﻿using LibraryApp.DataAccess.Abstract.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace LibraryApp.DataAccess.Concrete

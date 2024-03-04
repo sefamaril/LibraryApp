@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryAppAPI.Controllers
 {
-    [ApiController]
-    [Route("/book")]
     public class BookController : ControllerBase
     {
         private readonly IBookManager _bookManager;
@@ -14,8 +12,23 @@ namespace LibraryAppAPI.Controllers
             _bookManager = bookManager;
         }
 
+        [HttpGet("/book{id}")]
+        public IActionResult Get(Guid id)
+        {
+            var result = _bookManager.Get(id);
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
 
-        [HttpPost]
+        [HttpGet("/books")]
+        public IActionResult GetAll()
+        {
+            var result = _bookManager.GetListIsAvailable();
+            if (result == null) return NotFound();
+            return Ok(result);
+        }
+
+        [HttpPost("/book")]
         public IActionResult Insert(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName)
         {
             var result = _bookManager.Add(bookDTO, firstName, lastName);
@@ -25,19 +38,19 @@ namespace LibraryAppAPI.Controllers
         }
 
 
-        [HttpPut]
-        public IActionResult Update(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName)
+        [HttpPut("/book")]
+        public IActionResult Update(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName, Guid id)
         {
-            var result = _bookManager.Update(bookDTO, firstName, lastName);
+            var result = _bookManager.Update(bookDTO, firstName, lastName, id);
 
             if (result == null) return NotFound();
             return Ok(result);
         }
 
-        [HttpDelete]
-        public IActionResult Remove(Guid Id, string firstName, string lastName)
+        [HttpDelete("/book")]
+        public IActionResult Remove(string firstName, string lastName, Guid id)
         {
-            var result = _bookManager.Remove(Id, firstName, lastName);
+            var result = _bookManager.Remove(firstName, lastName, id);
 
             if (result == null) return NotFound();
             return Ok(result);

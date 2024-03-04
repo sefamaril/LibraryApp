@@ -1,7 +1,8 @@
-﻿using LibraryApp.Business.Abstract;
+﻿using AutoMapper;
+using LibraryApp.Business.Abstract;
 using LibraryApp.Core.Utilities.Result;
 using LibraryApp.DataAccess;
-using LibraryApp.DataAccess.Abstract;
+using LibraryApp.DataAccess.Abstract.Repository;
 using LibraryApp.Entities.DTOs;
 
 namespace LibraryApp.Business.Concrete
@@ -11,13 +12,43 @@ namespace LibraryApp.Business.Concrete
 
         private readonly IGenericRepository<Book, Guid> _bookRepository;
         private readonly IGenericRepository<Member, Guid> _memberRepository;
+        private readonly IMapper _mapper;
         private readonly LibraryContext _libraryContext;
 
-        public BookManager(IGenericRepository<Book, Guid> bookRepository, IGenericRepository<Member, Guid> memberRepository, LibraryContext libraryContext)
+        public BookManager
+        (
+            IGenericRepository<Book, Guid> bookRepository,
+            IGenericRepository<Member, Guid> memberRepository,
+            IMapper mapper,
+            LibraryContext libraryContext
+        )
         {
             _bookRepository = bookRepository;
             _memberRepository = memberRepository;
+            _mapper = mapper;
             _libraryContext = libraryContext;
+        }
+
+        public IDataResult<CreateOrUpdateBookDTO> Get(Guid id)
+        {
+            var getBook = _libraryContext.Books.FirstOrDefault(book => book.Id == id);
+            if (getBook == null)
+                return new DataResult<CreateOrUpdateBookDTO>(false, "Kitap bulunamdı.");
+
+            var bookt = _mapper.Map<CreateOrUpdateBookDTO>(getBook);
+
+            return new DataResult<CreateOrUpdateBookDTO>(bookt, true);
+        }
+
+        public IDataResult<List<CreateOrUpdateBookDTO>> GetListIsAvailable()
+        {
+            var getBookList = _libraryContext.Books.Where(x => x.IsAvailable == true).ToList();
+            if (!getBookList.Any())
+                return new DataResult<List<CreateOrUpdateBookDTO>>(false, "Kitaplar bulunamdı.");
+
+            var bookListDto = _mapper.Map<List<CreateOrUpdateBookDTO>>(getBookList);
+
+            return new DataResult<List<CreateOrUpdateBookDTO>>(bookListDto, true);
         }
 
         public IResult Add(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName)
@@ -75,7 +106,7 @@ namespace LibraryApp.Business.Concrete
         //    }
         //}
 
-        public IResult Remove(Guid id, string firstName, string lastName)
+        public IResult Remove(string firstName, string lastName, Guid id)
         {
             if (id == null || id == Guid.Empty)
                 return new Result(false, "id alanı boş geçilemez");
@@ -83,16 +114,18 @@ namespace LibraryApp.Business.Concrete
             try
             {
                 var member = _libraryContext.Members.FirstOrDefault(m => m.FirstName == firstName && m.LastName == lastName);
-
                 if (member == null)
                     return new Result(false, "Kullanıcı bulunamadı.");
 
-                var book = new Book
-                {
-                    DeletedDate = DateTime.UtcNow,
-                    DeletedUser = member.Id
-                };
-                bool isSuccess = _bookRepository.SoftDeleteAsyncById(book.Id, member.Id).GetAwaiter().GetResult();
+                var getBook = _libraryContext.Books.FirstOrDefault(b => b.Id == id && b.DeletedDate == null && b.DeletedUser == null);
+                if (getBook == null)
+                    return new Result(false, "Kitap bulunamadı");
+
+                getBook.Id = id;
+                getBook.IsAvailable = false;
+                getBook.DeletedDate = DateTime.UtcNow;
+                getBook.DeletedUser = member.Id;
+                bool isSuccess = _bookRepository.SoftDeleteAsyncById(getBook.Id, member.Id).GetAwaiter().GetResult();
                 return new Result(isSuccess, "Kitap başarıyla silindi.");
 
             }
@@ -103,7 +136,7 @@ namespace LibraryApp.Business.Concrete
             }
         }
 
-        public IResult Update(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName)
+        public IResult Update(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName, Guid id)
         {
             try
             {
@@ -112,16 +145,20 @@ namespace LibraryApp.Business.Concrete
                 if (member == null)
                     return new Result(false, "Kullanıcı bulunamadı");
 
+                var getBook = _libraryContext.Books.FirstOrDefault(b => b.Id == id);
 
-                var book = new Book
-                {
-                    Title = bookDTO.Title,
-                    Author = bookDTO.Author,
-                    ImageUrl = bookDTO.ImageUrl,
-                    ModifiedDate = DateTime.UtcNow,
-                    ModifiedUser = member.Id
-                };
-                bool isSuccess = _bookRepository.UpdateAsync(book, member.Id).GetAwaiter().GetResult();
+                if (getBook == null)
+                    return new Result(false, "Kitap bulunamadı");
+
+                getBook.Id = id;
+                getBook.Title = bookDTO.Title;
+                getBook.Author = bookDTO.Author;
+                getBook.ImageUrl = bookDTO.ImageUrl;
+                getBook.IsAvailable = bookDTO.IsAvailable;
+                getBook.ModifiedDate = DateTime.UtcNow;
+                getBook.ModifiedUser = member.Id;
+
+                bool isSuccess = _bookRepository.UpdateAsync(getBook, member.Id).GetAwaiter().GetResult();
                 return new Result(isSuccess, "Kitap Başarıyla Güncellendi.");
 
             }

@@ -1,4 +1,5 @@
 ﻿using LibraryApp.DataAccess.Abstract;
+using LibraryApp.DataAccess.Abstract.Profile;
 using LibraryApp.DataAccess.Concrete;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,6 +12,7 @@ namespace LibraryApp.DataAccess.Extension
         public static void AddDataAccessModule(this IServiceCollection services, IConfiguration configurationContext)
         {
             services.AddDbContext<LibraryContext>(options => options.UseSqlServer(configurationContext.GetConnectionString("SQLServerConnection")), ServiceLifetime.Scoped);
+            services.AddAutoMapper(typeof(ProfileBase));
         }
     }
 }
