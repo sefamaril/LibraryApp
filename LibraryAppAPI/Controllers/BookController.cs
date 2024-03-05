@@ -1,4 +1,5 @@
 ﻿using LibraryApp.Business.Abstract;
+using LibraryApp.DataAccess;
 using LibraryApp.Entities.DTOs;
 using Microsoft.AspNetCore.Mvc;
 
@@ -29,7 +30,7 @@ namespace LibraryAppAPI.Controllers
         }
 
         [HttpPost("/book")]
-        public IActionResult Insert(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName)
+        public IActionResult Insert(Book bookDTO, string firstName, string lastName)
         {
             var result = _bookManager.Add(bookDTO, firstName, lastName);
 
@@ -39,7 +40,7 @@ namespace LibraryAppAPI.Controllers
 
 
         [HttpPut("/book")]
-        public IActionResult Update(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName, Guid id)
+        public IActionResult Update(Book bookDTO, string firstName, string lastName, Guid id)
         {
             var result = _bookManager.Update(bookDTO, firstName, lastName, id);
 

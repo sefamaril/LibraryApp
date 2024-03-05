@@ -29,29 +29,29 @@ namespace LibraryApp.Business.Concrete
             _libraryContext = libraryContext;
         }
 
-        public IDataResult<CreateOrUpdateBookDTO> Get(Guid id)
+        public IDataResult<Book> Get(Guid id)
         {
             var getBook = _libraryContext.Books.FirstOrDefault(book => book.Id == id);
             if (getBook == null)
-                return new DataResult<CreateOrUpdateBookDTO>(false, "Kitap bulunamdı.");
+                return new DataResult<Book>(false, "Kitap bulunamdı.");
 
-            var bookt = _mapper.Map<CreateOrUpdateBookDTO>(getBook);
+            var bookt = _mapper.Map<Book>(getBook);
 
-            return new DataResult<CreateOrUpdateBookDTO>(bookt, true);
+            return new DataResult<Book>(bookt, true);
         }
 
-        public IDataResult<List<CreateOrUpdateBookDTO>> GetListIsAvailable()
+        public IDataResult<List<Book>> GetListIsAvailable()
         {
             var getBookList = _libraryContext.Books.Where(x => x.IsAvailable == true).ToList();
             if (!getBookList.Any())
-                return new DataResult<List<CreateOrUpdateBookDTO>>(false, "Kitaplar bulunamdı.");
+                return new DataResult<List<Book>>(false, "Kitaplar bulunamdı.");
 
-            var bookListDto = _mapper.Map<List<CreateOrUpdateBookDTO>>(getBookList);
+            var bookListDto = _mapper.Map<List<Book>>(getBookList);
 
-            return new DataResult<List<CreateOrUpdateBookDTO>>(bookListDto, true);
+            return new DataResult<List<Book>>(bookListDto, true);
         }
 
-        public IResult Add(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName)
+        public IResult Add(Book bookDTO, string firstName, string lastName)
         {
             try
             {
@@ -65,7 +65,7 @@ namespace LibraryApp.Business.Concrete
                     Title = bookDTO.Title,
                     Author = bookDTO.Author,
                     ImageUrl = bookDTO.ImageUrl,
-                    IsAvailable = true,
+                    IsAvailable = bookDTO.IsAvailable,
                     CreatedDate = DateTime.UtcNow,
                     CreatedUser = member.Id
                 };
@@ -136,7 +136,7 @@ namespace LibraryApp.Business.Concrete
             }
         }
 
-        public IResult Update(CreateOrUpdateBookDTO bookDTO, string firstName, string lastName, Guid id)
+        public IResult Update(Book bookDTO, string firstName, string lastName, Guid id)
         {
             try
             {
